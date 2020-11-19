@@ -35,7 +35,9 @@ class Analyser:
         words = []
         for token in tokens:
             word = self.get_word(token)
+            word.frequency += 1
             word.sentence_set.add(sentence)
+            word.save()
             words.append(word)
         return words
 

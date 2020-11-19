@@ -34,6 +34,8 @@ class AnalyserTests(TestCase):
         self.assertTrue(sentence in dog.sentence_set.all())
         self.assertTrue(all(w in sentence.words.all() for w in (raccoon, dog)))
         self.assertEqual(len(Word.objects.all()), 2)
+        self.assertEqual(raccoon.frequency, 1)
+        self.assertEqual(dog.frequency, 1)
 
     def test_absolute_path(self):
         analyser = Analyser()
