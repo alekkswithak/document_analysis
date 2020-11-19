@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Word(models.Model):
-    text = models.CharField(max_length=45)
+    text = models.CharField(max_length=45, unique=True)
     frequency = models.IntegerField(default=0)
 
     def __str__(self):
@@ -11,18 +11,12 @@ class Word(models.Model):
 
 class Sentence(models.Model):
     text = models.TextField()
-    word = models.ForeignKey(
-        Word,
-        on_delete=models.CASCADE,
-        )
+    words = models.ManyToManyField(Word)
 
 
 class Document(models.Model):
     name = models.CharField(max_length=16)
-    word = models.ForeignKey(
-        Word,
-        on_delete=models.CASCADE,
-        )
+    words = models.ManyToManyField(Word)
 
     def __str__(self):
         return self.name
