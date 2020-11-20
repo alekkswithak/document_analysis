@@ -1,4 +1,5 @@
 import os
+import spacy
 from django.test import TestCase
 from spacy.lang.en import English
 from spacy.lang.en.stop_words import STOP_WORDS
@@ -7,35 +8,47 @@ from .models import (
     Sentence,
     Document
 )
-from .analyser import Analyser
+from .analyser import TempWord, Analyser
 
 
 class AnalyserTests(TestCase):
 
-    def test_get_existing_word(self):
+    def test_store_word(self):
         analyser = Analyser()
-        word = Word(text='test')
-        word.save()
-        returned = analyser.get_word('test')
-        self.assertEqual(returned, word)
-
-    def test_get_new_word(self):
-        analyser = Analyser()
-        returned = analyser.get_word('test')
-        self.assertEqual(returned.text, 'test')
+        self.assertTrue(isinstance(analyser.words['test'], TempWord))
 
     def test_parse_sentence(self):
         analyser = Analyser()
-        analyser.parse_sentence('Raccoon dog.')
-        raccoon = Word.objects.filter(text='raccoon').first()
-        dog = Word.objects.filter(text='dog').first()
-        sentence = Sentence.objects.filter(text='Raccoon dog.').first()
-        self.assertTrue(sentence in raccoon.sentence_set.all())
-        self.assertTrue(sentence in dog.sentence_set.all())
-        self.assertTrue(all(w in sentence.words.all() for w in (raccoon, dog)))
-        self.assertEqual(len(Word.objects.all()), 2)
+        sentence = 'Raccoon dog.'
+        analyser.parse_sentence(sentence)
+        self.assertTrue('raccoon' in analyser.words)
+        raccoon = analyser.words['raccoon']
+        self.assertTrue(
+            sentence in raccoon.sentences
+        )
+        self.assertEqual(len(analyser.words), 2)
         self.assertEqual(raccoon.frequency, 1)
+        self.assertTrue('dog' in analyser.words)
+        dog = analyser.words['dog']
+        self.assertTrue(
+            sentence in dog.sentences
+        )
         self.assertEqual(dog.frequency, 1)
+
+    def test_parse_sentence_two_dogs(self):
+        analyser = Analyser()
+        sentence = 'Raccoon dog dog.'
+        analyser.parse_sentence(sentence)
+        self.assertTrue('dog' in analyser.words)
+        dog = analyser.words['dog']
+        self.assertEqual(dog.frequency, 2)
+
+    def test_parse_sentence_output(self):
+        analyser = Analyser()
+        sentence = 'Raccoon dog dog.'
+        output = analyser.parse_sentence(sentence)
+        expected = {'raccoon', 'dog'}
+        self.assertEqual(expected, output)
 
     def test_absolute_path(self):
         analyser = Analyser()
@@ -53,13 +66,31 @@ class AnalyserTests(TestCase):
     def test_parse_document(self):
         analyser = Analyser()
         path = 'test_docs/universe.txt'
-        words = analyser.parse_document(path)
-        self.assertEqual(len(words), 10)
-        sentences = Sentence.objects.all()
-        self.assertEqual(len(sentences), 2)
-        documents = Document.objects.all()
-        self.assertEqual(len(documents), 1)
+        analyser.parse_document(path)
+        self.assertEqual(len(analyser.words), 10)
+        self.assertTrue('universe' in analyser.words)
+        universe = analyser.words['universe']
+        self.assertTrue(universe.sentences)
 
+    def test_parse_two_documents(self):
+        analyser = Analyser()
+        analyser.parse_document('test_docs/universe.txt')
+        analyser.parse_document('test_docs/other_people.txt')
+        self.assertTrue('people' in analyser.words)
+        people = analyser.words['people']
+        self.assertEqual(len(people.sentences), 2)
+
+    def test_parse_two_documents_lemmas(self):
+        """
+        Tests if the word Universe and Universes get reduced to Universe
+        """
+        analyser = Analyser()
+        analyser.parse_document('test_docs/universe.txt')
+        analyser.parse_document('test_docs/other_people.txt')
+        self.assertTrue('universe' in analyser.words)
+        universe = analyser.words['universe']
+        self.assertEqual(len(universe.sentences), 2)
+        self.assertEqual(len(universe.documents), 2)
 
 
 class TestSpacy(TestCase):
@@ -89,6 +120,17 @@ class TestSpacy(TestCase):
             and token.text.lower() not in STOP_WORDS
         ]
         self.assertEqual(len(tokens), 2)
+
+    def test_word_tokenization_lemma(self):
+        nlp = spacy.load('en_core_web_sm')
+        doc = nlp("ask asking asks")
+        tokens = [
+            token.lemma_.lower()
+            for token in doc
+            if not token.is_punct
+            and token.text.lower() not in STOP_WORDS
+        ]
+        self.assertEqual(len(set(tokens)), 1)
 
 
 class TestModels(TestCase):

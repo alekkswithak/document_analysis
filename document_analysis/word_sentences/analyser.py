@@ -1,6 +1,8 @@
 import os
+import spacy
+from collections import defaultdict
 from datetime import datetime
-from spacy.lang.en import English
+# from spacy.lang.en import English
 from spacy.lang.en.stop_words import STOP_WORDS
 from .models import (
     Word,
@@ -9,37 +11,35 @@ from .models import (
 )
 
 
+class TempWord:
+
+    def __init__(self):
+        self.text = None
+        self.sentences = set()
+        self.documents = set()
+        self.frequency = 0
+
+
 class Analyser:
 
     def __init__(self):
-        self.nlp = English()
-        self.nlp.add_pipe(self.nlp.create_pipe('sentencizer'))
-
-    def get_word(self, token):
-        word = Word.objects.filter(text=token).first()
-        if word is None:
-            word = Word(text=token)
-            word.save()
-        return word
+        self.nlp = spacy.load('en_core_web_sm')
+        # self.nlp.add_pipe(self.nlp.create_pipe('sentencizer'))
+        self.words = defaultdict(TempWord)
 
     def parse_sentence(self, sentence):
         doc = self.nlp(sentence)
-        sentence = Sentence(text=sentence)
-        sentence.save()
         tokens = [
-            token.text.lower()
+            token.lemma_.lower()
             for token in doc
             if not token.is_punct
             and token.text.lower() not in STOP_WORDS
         ]
-        words = []
         for token in tokens:
-            word = self.get_word(token)
-            word.frequency += 1
-            word.sentence_set.add(sentence)
-            word.save()
-            words.append(word)
-        return words
+            self.words[token].text = token
+            self.words[token].frequency += 1
+            self.words[token].sentences.add(sentence)
+        return set(tokens)
 
     def absolute_path(self, relative_path):
         path = os.path.dirname(os.path.abspath(__file__))
@@ -60,18 +60,14 @@ class Analyser:
 
     def parse_document(self, path):
         text, filename = self.get_document_data(path)
-        document = Document(name=filename)
-        document.save()
         doc = self.nlp(text)
         sentences = [sent.text for sent in doc.sents]
-        words = []
+        words = set()
+
         for sentence in sentences:
             sentence_words = self.parse_sentence(sentence)
-            words.extend(sentence_words)
+            words.update(sentence_words)
 
         for word in words:
-            word.document_set.add(document)
-
-        return words
-
+            self.words[word].documents.add(filename)
 
