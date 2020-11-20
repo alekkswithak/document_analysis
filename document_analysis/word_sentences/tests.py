@@ -82,7 +82,7 @@ class AnalyserTests(TestCase):
 
     def test_parse_two_documents_lemmas(self):
         """
-        Tests if the word Universe and Universes get reduced to Universe
+        Tests if the word Universe and Universes get reduced to universe
         """
         analyser = Analyser()
         analyser.parse_document('test_docs/universe.txt')
@@ -91,6 +91,27 @@ class AnalyserTests(TestCase):
         universe = analyser.words['universe']
         self.assertEqual(len(universe.sentences), 2)
         self.assertEqual(len(universe.documents), 2)
+
+    def test_save_data_single_sentence_document(self):
+        analyser = Analyser()
+        analyser.parse_document('test_docs/garden.txt')
+        analyser.save_data()
+        garden = Word.objects.filter(text='garden').first()
+        self.assertEqual(garden.frequency, 1)
+        self.assertEqual(len(garden.sentence_set.all()), 1)
+        self.assertEqual(len(garden.document_set.all()), 1)
+
+    def test_save_data_two_documents(self):
+        analyser = Analyser()
+        analyser.parse_document('test_docs/universe.txt')
+        analyser.parse_document('test_docs/other_people.txt')
+        analyser.save_data()
+        universe = Word.objects.filter(text='universe').first()
+        self.assertEqual(universe.frequency, 2)
+        self.assertEqual(len(universe.sentence_set.all()), 2)
+        self.assertEqual(len(universe.document_set.all()), 2)
+        self.assertEqual(len(Document.objects.all()), 2)
+        self.assertEqual(len(Sentence.objects.all()), 5)
 
 
 class TestSpacy(TestCase):
@@ -138,10 +159,10 @@ class TestModels(TestCase):
     def test_word_relationships(self):
         w = Word()
         w.save()
-        s1 = Sentence()
+        s1 = Sentence(text='one')
         s1.save()
         s1.words.add(w)
-        s2 = Sentence()
+        s2 = Sentence(text='two')
         s2.save()
         w.sentence_set.add(s2)
         d = Document()

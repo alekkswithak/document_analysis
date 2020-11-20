@@ -10,7 +10,7 @@ class Word(models.Model):
 
 
 class Sentence(models.Model):
-    text = models.TextField()
+    text = models.TextField(unique=True)
     words = models.ManyToManyField(Word)
 
 

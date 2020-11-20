@@ -71,3 +71,24 @@ class Analyser:
         for word in words:
             self.words[word].documents.add(filename)
 
+    def save_data(self):
+        for _, word in self.words.items():
+            word_record, created = Word.objects.get_or_create(
+                text=word.text,
+            )
+            if created:
+                word_record.frequency = word.frequency
+            else:
+                word_record.frequency += word.frequency
+            word_record.save()
+            for sentence_text in word.sentences:
+                s, _ = Sentence.objects.get_or_create(
+                    text=sentence_text
+                )
+                s.words.add(word_record)
+            for document_name in word.documents:
+                d, _ = Document.objects.get_or_create(
+                    name=document_name
+                )
+                d.words.add(word_record)
+

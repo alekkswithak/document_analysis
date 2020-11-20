@@ -14,4 +14,6 @@ class Command(BaseCommand):
             assert os.path.isabs(path)
             analyser.parse_document(path)
             self.stdout.write('File "%s" processed.' % (filename))
+        self.stdout.write('Saving data...')
+        analyser.save_data()
         self.stdout.write('Setup complete!')
