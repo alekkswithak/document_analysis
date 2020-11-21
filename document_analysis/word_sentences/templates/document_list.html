@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<br>
+<div class="container">
+    <h2>Documents</h2>
+    <div class="table-responsive table-hover">
+    <table class="table">
+    <thead>
+        <tr>
+        <th>Name</th>
+        <th>Word Total</th>
+        <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for d in document_list %}
+        <tr>
+            <td>{{ d.name }}</td>
+            <td>{{ d.word_total }}</td>
+            <td><a href="{% url 'document-word-list' doc_id=d.id %}">Browse Words</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+    </div>
+  </div>
+{% endblock %}

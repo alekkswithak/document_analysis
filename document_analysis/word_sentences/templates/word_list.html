@@ -1,32 +1,47 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <br>
-    <div class="container">
-        <h2>Words</h2>
+<br>
+<div class="container">
+    <h2>{{ heading }}</h2>
+    <div class="row">
         {% for w in word_list %}
-            <h3>{{ w.text }}</h3>
-            <p>Frequency: {{ w.frequency }}</p>
-            <p>{{ w.documents }}</p>
-            {% for s in w.sentence_set.all %}
-            <p>{{ s.text }}</p>
-            {% endfor %}
+        <div class="col-sm-12">
+            <br>
+            <div class='card'>
+                <div class="card-body">
+                    <h2>{{ w.text }}</h2>
+                    <ul class="list-unstyled">
+                        <li>{{ w.id }}</li>
+                        <li>{{ w.frequency }}</li>
+                        <li>{{ w.documents }}</li>
+                        <button type="button" class="btn btn-dark" data-toggle="collapse" data-target="#sentences{{ w.id }}">Sentences</button>
+                        <div id="sentences{{ w.id }}" class="collapse">
+                            {% for s in w.sentence_set.all %}
+                            <li>{{ s.text }}</li>
+                            {% endfor %}
+                        </div>
+                        </ul>
+                </div>
+            </div>
+        </div>
         {% endfor %}
     </div>
-
-    {% if is_paginated %}
-    <div class="container">
-        <p>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</p>
-        <ul class="pagination">
-            {% if page_obj.has_previous %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a></li>
-            {% endif %}
-            {% if page_obj.has_next %}
-            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
-            {% endif %}
-
-        </ul>
-    </div>
-   {% endif %}
+</div>
+<br>
+{% if is_paginated %}
+<div class="container">
+    <div class="text-center">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+    <br>
+    <ul class="pagination justify-content-center pg-dark">
+        {% if page_obj.has_previous %}
+        <li class="page-item-dark"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        {% endif %}
+    </ul>
+</div>
+{% endif %}
 
 {% endblock %}

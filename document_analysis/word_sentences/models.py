@@ -26,3 +26,6 @@ class Document(models.Model):
 
     def __str__(self):
         return self.name
+
+    def word_total(self):
+        return len(self.words.all())

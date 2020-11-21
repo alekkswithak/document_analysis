@@ -18,6 +18,8 @@ from django.urls import path
 from word_sentences import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('', views.WordListView.as_view(), name='word-list'),
+    path('words/', views.WordListView.as_view(), name='word-list'),
+    path('documents/', views.DocumentListView.as_view(), name='document-list'),
+    path('document-words/<int:doc_id>', views.DocumentWordListView.as_view(), name='document-word-list'),
 ]
