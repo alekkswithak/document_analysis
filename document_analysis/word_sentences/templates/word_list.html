@@ -33,12 +33,12 @@
 <div class="container">
     <div class="text-center">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
     <br>
-    <ul class="pagination justify-content-center pg-dark">
+    <ul class="pagination justify-content-center">
         {% if page_obj.has_previous %}
-        <li class="page-item-dark"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        <li class="page-item"><a class="page-link text-light bg-dark" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
         {% endif %}
         {% if page_obj.has_next %}
-        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        <li class="page-item"><a class="page-link text-light bg-dark" href="?page={{ page_obj.next_page_number }}">Next</a></li>
         {% endif %}
     </ul>
 </div>

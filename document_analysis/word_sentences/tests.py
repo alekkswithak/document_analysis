@@ -67,7 +67,7 @@ class AnalyserTests(TestCase):
         analyser = Analyser()
         path = 'test_docs/universe.txt'
         analyser.parse_document(path)
-        self.assertEqual(len(analyser.words), 10)
+        self.assertEqual(len(analyser.words), 9)
         self.assertTrue('universe' in analyser.words)
         universe = analyser.words['universe']
         self.assertTrue(universe.sentences)
@@ -152,6 +152,16 @@ class TestSpacy(TestCase):
             and token.text.lower() not in STOP_WORDS
         ]
         self.assertEqual(len(set(tokens)), 1)
+
+    def test_is_alpha(self):
+        nlp = spacy.load('en_core_web_sm')
+        doc = nlp("1 $6 £9 /n [ b2 , @ /t ")
+        tokens = [
+            token.lemma_.lower()
+            for token in doc
+            if token.is_alpha
+        ]
+        self.assertEqual(len(tokens), 0)
 
 
 class TestModels(TestCase):
