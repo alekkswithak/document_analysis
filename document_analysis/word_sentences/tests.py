@@ -134,16 +134,24 @@ class AnalyserTests(TestCase):
         self.assertTrue('universe' in analyser.words)
         universe = analyser.words['universe']
         self.assertEqual(len(universe.sentences), 2)
-        self.assertEqual(len(universe.documents), 2)
+
+    def test_analyser_document_sents(self):
+        analyser = Analyser()
+        analyser.parse_document('test_docs/universe.txt')
+        self.assertEqual(
+            len(analyser.document_data['universe.txt'].sentences), 2)
 
     def test_save_data_single_sentence_document(self):
         analyser = Analyser()
         analyser.parse_document('test_docs/garden.txt')
         analyser.save_data()
-        garden = Word.objects.filter(text='garden').first()
-        self.assertEqual(garden.frequency, 1)
-        self.assertEqual(len(garden.sentence_set.all()), 1)
-        self.assertEqual(len(garden.document_set.all()), 1)
+        word = Word.objects.filter(text='garden').first()
+        self.assertEqual(word.total_frequency, 1)
+        self.assertEqual(len(word.sentence_set.all()), 1)
+        self.assertEqual(len(word.document_set.all()), 1)
+        sentence = word.sentence_set.first()
+        document = Document.objects.get(name='garden.txt')
+        self.assertEqual(sentence.document, document)
 
     def test_save_data_two_documents(self):
         analyser = Analyser()
@@ -151,7 +159,7 @@ class AnalyserTests(TestCase):
         analyser.parse_document('test_docs/other_people.txt')
         analyser.save_data()
         universe = Word.objects.filter(text='universe').first()
-        self.assertEqual(universe.frequency, 2)
+        self.assertEqual(universe.total_frequency, 2)
         self.assertEqual(len(universe.sentence_set.all()), 2)
         self.assertEqual(len(universe.document_set.all()), 2)
         self.assertEqual(len(Document.objects.all()), 2)

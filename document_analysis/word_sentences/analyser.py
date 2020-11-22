@@ -6,7 +6,8 @@ from spacy.lang.en.stop_words import STOP_WORDS
 from .models import (
     Word,
     Sentence,
-    Document
+    Document,
+    DocumentWord
 )
 
 
@@ -15,8 +16,15 @@ class TempWord:
     def __init__(self):
         self.text = None
         self.sentences = set()
-        self.documents = set()
         self.frequency = 0
+
+
+class TempDoc:
+
+    def __init__(self):
+        self.text = None
+        self.sentences = set()
+        self.word_frequency = defaultdict(int)
 
 
 class Analyser:
@@ -24,6 +32,7 @@ class Analyser:
     def __init__(self):
         self.nlp = spacy.load('en_core_web_sm')
         self.words = defaultdict(TempWord)
+        self.document_data = defaultdict(TempDoc)
 
     def parse_token(self, token):
         """
@@ -66,30 +75,47 @@ class Analyser:
     def parse_document(self, path):
         text, filename = self.get_document_data(path)
         doc = self.nlp(text)
+        temp_doc = self.document_data[filename]
 
         for token in doc:
             if token.is_alpha and token.lower_ not in STOP_WORDS:
                 temp_word = self.parse_token(token)
-                temp_word.documents.add(filename)
+                temp_doc.sentences.add(token.sent.text)
+                temp_doc.word_frequency[temp_word.text] += 1
 
     def save_data(self):
+
+        #  create and assign senteces to words:
         for text, word in self.words.items():
             word_record, created = Word.objects.get_or_create(
                 text=text
             )
             if created:
-                word_record.frequency = word.frequency
+                word_record.total_frequency = word.frequency
             else:
-                word_record.frequency += word.frequency
+                word_record.total_frequency += word.frequency
             word_record.save()
             for sentence_text in word.sentences:
                 s, _ = Sentence.objects.get_or_create(
                     text=sentence_text
                 )
                 s.words.add(word_record)
-            for document_name in word.documents:
-                d, _ = Document.objects.get_or_create(
-                    name=document_name
-                )
-                d.words.add(word_record)
 
+        #  assign sentences and words to documents:
+        for document_name, data in self.document_data.items():
+            d = Document.objects.create(
+                name=document_name
+            )
+            for sentence in data.sentences:
+                s = Sentence.objects.get(
+                    text=sentence
+                )
+                s.document = d
+                s.save()
+            for word, frequency in data.word_frequency.items():
+                w = Word.objects.get(text=word)
+                dw = DocumentWord.objects.create(
+                    word=w,
+                    document=d,
+                    frequency=frequency
+                )

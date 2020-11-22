@@ -1,8 +1,8 @@
-from django.shortcuts import render
 from django.views.generic.list import ListView
 from .models import (
     Word,
     Document,
+    DocumentWord,
 )
 
 
@@ -23,15 +23,16 @@ class DocumentListView(ListView):
 
 
 class DocumentWordListView(ListView):
-    model = Word
-    template_name = 'word_list.html'
+    model = DocumentWord
+    template_name = 'document_word_list.html'
     paginate_by = 10
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         doc = Document.objects.get(id=self.kwargs['doc_id'])
         context['heading'] = 'Words from {}'.format(doc.name)
+        context['doc'] = doc
         return context
 
     def get_queryset(self):
-        return Word.objects.filter(document__id=self.kwargs['doc_id'])
+        return DocumentWord.objects.filter(document__id=self.kwargs['doc_id'])

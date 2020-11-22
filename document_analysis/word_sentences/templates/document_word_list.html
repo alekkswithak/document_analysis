@@ -5,19 +5,20 @@
 <div class="container">
     <h2>{{ heading }}</h2>
     <div class="row">
-        {% for w in word_list %}
+        {% for w in documentword_list %}
         <div class="col-sm-12">
             <br>
             <div class='card'>
                 <div class="card-body">
-                    <h2>{{ w.text }}</h2>
+                    <h2>{{ w.word.text }}</h2>
                     <ul class="list-unstyled">
                         <li>{{ w.frequency }}</li>
-                        <li>{{ w.documents }}</li>
                         <button type="button" class="btn btn-dark" data-toggle="collapse" data-target="#sentences{{ w.id }}">Sentences</button>
                         <div id="sentences{{ w.id }}" class="collapse">
-                            {% for s in w.sentence_set.all %}
+                            {% for s in w.word.sentence_set.all %}
+                            {% if s.document == w.document %}
                             <li>{{ s.text }}</li>
+                            {% endif %}
                             {% endfor %}
                         </div>
                     </ul>
