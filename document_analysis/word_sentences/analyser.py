@@ -25,21 +25,28 @@ class Analyser:
         self.nlp = spacy.load('en_core_web_sm')
         self.words = defaultdict(TempWord)
 
+    def parse_token(self, token):
+        """
+        Creates or modifies a TempWord object from a token.
+        """
+        word = token.lemma_.lower()
+        self.words[word].text = word
+        self.words[word].frequency += 1
+        self.words[word].sentences.add(token.sent.text)
+        return self.words[word]
+
     def parse_sentence(self, sentence):
         doc = self.nlp(sentence)
-        tokens = [
-            token.lemma_.lower()
+        words = set(
+            self.parse_token(token).text
             for token in doc
             if token.is_alpha
             and token.lower_ not in STOP_WORDS
-        ]
-        for token in tokens:
-            self.words[token].text = token
-            self.words[token].frequency += 1
-            self.words[token].sentences.add(sentence)
-        return set(tokens)
+        )
+        return words
 
     def absolute_path(self, relative_path):
+        # TODO: put in helpers
         path = os.path.dirname(os.path.abspath(__file__))
         for p in relative_path.split('/'):
             path = os.path.join(path, p)
@@ -59,20 +66,16 @@ class Analyser:
     def parse_document(self, path):
         text, filename = self.get_document_data(path)
         doc = self.nlp(text)
-        sentences = [sent.text for sent in doc.sents]
-        words = set()
 
-        for sentence in sentences:
-            sentence_words = self.parse_sentence(sentence)
-            words.update(sentence_words)
-
-        for word in words:
-            self.words[word].documents.add(filename)
+        for token in doc:
+            if token.is_alpha and token.lower_ not in STOP_WORDS:
+                temp_word = self.parse_token(token)
+                temp_word.documents.add(filename)
 
     def save_data(self):
-        for _, word in self.words.items():
+        for text, word in self.words.items():
             word_record, created = Word.objects.get_or_create(
-                text=word.text,
+                text=text
             )
             if created:
                 word_record.frequency = word.frequency

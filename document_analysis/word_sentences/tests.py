@@ -13,9 +13,53 @@ from .analyser import TempWord, Analyser
 
 class AnalyserTests(TestCase):
 
-    def test_store_word(self):
+    def test_parse_token(self):
         analyser = Analyser()
-        self.assertTrue(isinstance(analyser.words['test'], TempWord))
+        nlp = spacy.load('en_core_web_sm')
+        doc = nlp("Word.")
+        token = doc[0]
+        temp_word = analyser.parse_token(token)
+        self.assertTrue(isinstance(temp_word, TempWord))
+        self.assertEqual(len(analyser.words), 1)
+        self.assertTrue("Word." in temp_word.sentences)
+        self.assertEqual(temp_word.text, "word")
+        self.assertEqual(temp_word.frequency, 1)
+
+    def test_parse_two_different_tokens(self):
+        analyser = Analyser()
+        nlp = spacy.load('en_core_web_sm')
+        doc = nlp("Word second.")
+        word = analyser.parse_token(doc[0])
+        second = analyser.parse_token(doc[1])
+        self.assertEqual(len(analyser.words), 2)
+        self.assertTrue("Word second." in word.sentences)
+        self.assertEqual(word.text, "word")
+        self.assertEqual(word.frequency, 1)
+        self.assertTrue("Word second." in second.sentences)
+        self.assertEqual(second.text, "second")
+        self.assertEqual(second.frequency, 1)
+
+    def test_parse_two_same_tokens(self):
+        analyser = Analyser()
+        nlp = spacy.load('en_core_web_sm')
+        doc = nlp("Word word.")
+        analyser.parse_token(doc[0])
+        word = analyser.parse_token(doc[1])
+        self.assertEqual(len(analyser.words), 1)
+        self.assertTrue("Word word." in word.sentences)
+        self.assertEqual(word.text, "word")
+        self.assertEqual(word.frequency, 2)
+
+    def test_parse_two_different_tokens_same_lemma(self):
+        analyser = Analyser()
+        nlp = spacy.load('en_core_web_sm')
+        doc = nlp("Word words.")
+        analyser.parse_token(doc[0])
+        word = analyser.parse_token(doc[1])
+        self.assertEqual(len(analyser.words), 1)
+        self.assertTrue("Word words." in word.sentences)
+        self.assertEqual(word.text, "word")
+        self.assertEqual(word.frequency, 2)
 
     def test_parse_sentence(self):
         analyser = Analyser()
@@ -162,6 +206,15 @@ class TestSpacy(TestCase):
             if token.is_alpha
         ]
         self.assertEqual(len(tokens), 0)
+
+    def test_token(self):
+        nlp = spacy.load('en_core_web_sm')
+        doc = nlp("This is a sentence")
+        token = doc[0]
+        self.assertEqual(token.sent.text, "This is a sentence")
+        self.assertEqual(token.text, "This")
+        self.assertEqual(token.lower_, "this")
+        self.assertEqual(token.lemma_, "this")
 
 
 class TestModels(TestCase):
