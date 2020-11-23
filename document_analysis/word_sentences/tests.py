@@ -12,6 +12,9 @@ from .analyser import TempWord, Analyser
 
 
 class AnalyserTests(TestCase):
+    """
+    Tests the Analyser class
+    """
 
     def test_parse_token(self):
         analyser = Analyser()
@@ -167,7 +170,10 @@ class AnalyserTests(TestCase):
 
 
 class TestSpacy(TestCase):
-    """Exploratory tests"""
+    """
+    Exploratory tests.
+    Not testing the application logic.
+    """
 
     def test_sentence_tokenization(self):
         nlp = English()

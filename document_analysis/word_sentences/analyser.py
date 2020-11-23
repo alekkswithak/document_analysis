@@ -12,6 +12,9 @@ from .models import (
 
 
 class TempWord:
+    """
+    Temporary container for word data
+    """
 
     def __init__(self):
         self.text = None
@@ -20,6 +23,9 @@ class TempWord:
 
 
 class TempDoc:
+    """
+    Temporary container for document data
+    """
 
     def __init__(self):
         self.text = None
@@ -28,6 +34,11 @@ class TempDoc:
 
 
 class Analyser:
+    """
+    Deconstructs documents into words and corresponding sentences.
+    Can be run for one document or more, accumulates the results.
+    Saves the results to a database.
+    """
 
     def __init__(self):
         self.nlp = spacy.load('en_core_web_sm')
@@ -41,10 +52,13 @@ class Analyser:
         word = token.lemma_.lower()
         self.words[word].text = word
         self.words[word].frequency += 1
-        self.words[word].sentences.add(token.sent.text)
+        self.words[word].sentences.add(token.sent.text.strip())
         return self.words[word]
 
     def parse_sentence(self, sentence):
+        """
+        Parses sentences, no longer necessary for the scope of this task.
+        """
         doc = self.nlp(sentence)
         words = set(
             self.parse_token(token).text
@@ -62,7 +76,9 @@ class Analyser:
         return path
 
     def get_document_data(self, path):
-        """Returns the document text and the name of the file"""
+        """
+        Returns the document text and the name of the file.
+        """
 
         if not os.path.isabs(path):
             path = self.absolute_path(path)
@@ -73,6 +89,9 @@ class Analyser:
         return text, filename
 
     def parse_document(self, path):
+        """
+        Deconstructs a document into TempWord and TempDoc objects.
+        """
         text, filename = self.get_document_data(path)
         doc = self.nlp(text)
         temp_doc = self.document_data[filename]
@@ -80,10 +99,13 @@ class Analyser:
         for token in doc:
             if token.is_alpha and token.lower_ not in STOP_WORDS:
                 temp_word = self.parse_token(token)
-                temp_doc.sentences.add(token.sent.text)
+                temp_doc.sentences.add(token.sent.text.strip())
                 temp_doc.word_frequency[temp_word.text] += 1
 
     def save_data(self):
+        """
+        Writes TempWord and TempDoc objects to a db.
+        """
         #  create and assign senteces to words:
         for text, word in self.words.items():
             word_record, created = Word.objects.get_or_create(

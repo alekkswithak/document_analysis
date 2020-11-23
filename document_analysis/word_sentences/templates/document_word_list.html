@@ -3,8 +3,24 @@
 {% block content %}
 <br>
 <div class="container">
-    <h2>{{ heading }}</h2>
-    <a href="{% url 'download' doc_id %}">Download</a>
+    <div class="row">
+        <div class="col-sm-9">
+            <h2>{{ heading }}</h2>
+            <a href="{% url 'download' doc_id %}">Download</a>
+        </div>
+        <div class="col-sm-3">
+            {% if is_paginated %}
+            <ul class="pagination justify-content float-right">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link text-light bg-dark" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link text-light bg-dark" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                {% endif %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
     <div class="row">
         {% for w in documentword_list %}
         <div class="col-sm-12">

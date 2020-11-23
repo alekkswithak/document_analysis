@@ -8,13 +8,16 @@ from .models import (
     DocumentWord,
 )
 from django.conf import settings
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse
 
 
 class WordListView(ListView):
+    """
+    List view for all Word objects.
+    """
     model = Word
     template_name = 'word_list.html'
-    paginate_by = 10
+    paginate_by = 12
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -23,14 +26,20 @@ class WordListView(ListView):
 
 
 class DocumentListView(ListView):
+    """
+    List view for all Document objects.
+    """
     model = Document
     template_name = 'document_list.html'
 
 
 class DocumentWordListView(ListView):
+    """
+    List view for Docuement Word objetcs
+    """
     model = DocumentWord
     template_name = 'document_word_list.html'
-    paginate_by = 10
+    paginate_by = 12
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -44,26 +53,33 @@ class DocumentWordListView(ListView):
 
 
 def download(request, doc_id):
+    """
+    Response downloads a .txt file
+    Containing the word data corresponding to a document,
+    or all word data if the passed id is 0
+    """
     if doc_id == 0:
         name = 'all_documents_{}.txt'.format(datetime.now())
         out = 'All word data:\n\n'
         for w in Word.objects.all():
             out += w.text + '\n'
-            out += str(w.total_frequency) + '\n'
-            out += w.documents() + '\n'
+            out += '\tFrequency: ' + str(w.total_frequency) + '\n'
+            out += '\t' + w.documents() + '\n'
+            out += '\tSentences:\n'
             for s in w.sentence_set.all():
-                out += s.text.strip() + '\n'
+                out += '\t\t' + s.text.strip() + '\n'
             out += '\n'
     else:
         d = Document.objects.get(id=doc_id)
         out = 'Word data for {}:\n\n'.format(d.name)
-        name = 'document_{}_words_{}'.format(d.id, datetime.now())
+        name = 'document_{}_words_{}.txt'.format(d.id, datetime.now())
         for w in DocumentWord.objects.filter(document__id=doc_id):
             out += w.word.text + '\n'
-            out += str(w.frequency) + '\n'
+            out += '\tFrequency: ' + str(w.frequency) + '\n'
+            out += '\tSentences:\n'
             for s in w.word.sentence_set.all():
                 if s.document.id == w.document.id:
-                    out += s.text.strip() + '\n'
+                    out += '\t\t' + s.text.strip() + '\n'
             out += '\n'
 
     response = HttpResponse(out ,content_type='text/csv')
