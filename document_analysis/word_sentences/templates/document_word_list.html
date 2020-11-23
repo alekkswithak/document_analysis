@@ -4,6 +4,7 @@
 <br>
 <div class="container">
     <h2>{{ heading }}</h2>
+    <a href="{% url 'download' doc_id %}">Download</a>
     <div class="row">
         {% for w in documentword_list %}
         <div class="col-sm-12">
@@ -12,7 +13,7 @@
                 <div class="card-body">
                     <h2>{{ w.word.text }}</h2>
                     <ul class="list-unstyled">
-                        <li>{{ w.frequency }}</li>
+                        <li>frequency{{ w.frequency }}</li>
                         <button type="button" class="btn btn-dark" data-toggle="collapse" data-target="#sentences{{ w.id }}">Sentences</button>
                         <div id="sentences{{ w.id }}" class="collapse">
                             {% for s in w.word.sentence_set.all %}

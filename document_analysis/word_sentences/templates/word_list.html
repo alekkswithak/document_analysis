@@ -4,6 +4,7 @@
 <br>
 <div class="container">
     <h2>{{ heading }}</h2>
+    <a href="{% url 'download' 0 %}">Download</a>
     <div class="row">
         {% for w in word_list %}
         <div class="col-sm-12">
@@ -12,7 +13,7 @@
                 <div class="card-body">
                     <h2>{{ w.text }}</h2>
                     <ul class="list-unstyled">
-                        <li>{{ w.frequency }}</li>
+                        <li>Frequency: {{ w.total_frequency }}</li>
                         <li>{{ w.documents }}</li>
                         <button type="button" class="btn btn-dark" data-toggle="collapse" data-target="#sentences{{ w.id }}">Sentences</button>
                         <div id="sentences{{ w.id }}" class="collapse">

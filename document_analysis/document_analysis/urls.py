@@ -22,4 +22,5 @@ urlpatterns = [
     path('words/', views.WordListView.as_view(), name='word-list'),
     path('documents/', views.DocumentListView.as_view(), name='document-list'),
     path('document-words/<int:doc_id>', views.DocumentWordListView.as_view(), name='document-word-list'),
+    path('download/<int:doc_id>/', views.download, name='download'),
 ]

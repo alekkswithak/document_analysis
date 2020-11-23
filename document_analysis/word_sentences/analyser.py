@@ -84,7 +84,6 @@ class Analyser:
                 temp_doc.word_frequency[temp_word.text] += 1
 
     def save_data(self):
-
         #  create and assign senteces to words:
         for text, word in self.words.items():
             word_record, created = Word.objects.get_or_create(
