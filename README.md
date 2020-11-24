@@ -44,9 +44,10 @@ Click Browse Words to view word data specific to that document.
 Click download under the page heading to download document specific data as txt.
 
 ## To do
-> Word search field
-> Document upload capability
-> Word detail page
-> API (because everyone wants an API)
-> Better front end
-> Improve saving speed
+* Word search field
+* Filter to order by frequency
+* Document upload capability
+* Word detail page
+* API (because everyone wants an API)
+* Better front end
+* Improve saving speed
